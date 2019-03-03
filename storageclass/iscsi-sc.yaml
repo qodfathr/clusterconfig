@@ -1,0 +1,12 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: standard
+provisioner: iscsi-targetd
+parameters:
+  targetPortal: 192.168.1.4:3260
+  iqn: iqn.1991-05.com.microsoft:bmf-k8s-target
+  iscsiInterface: default
+  initiators: iqn.2019-02.com.mancinisytems:node1,iqn.2019-02.com.mancinisystems:node2,iqn.2019-02.com.mancinisystems:node3,iqn.2019-02.com.mancinisystems:node4,iqn.2019-02.com.mancinisystems:node5
+  chapAuthDiscovery: "false"
+  chapAuthSession: "false"
