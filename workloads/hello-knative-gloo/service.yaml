@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
-  name: nginx-gloo
+  name: helloworld-go 
   namespace: default
 spec:
   runLatest:
@@ -9,10 +9,8 @@ spec:
       revisionTemplate:
         spec:
           container:
-            image: nginx:1
-            ports:
-              - containerPort: 80
+            image: docker.io/qodfathr/helloworld-go:1.0
             env:
-              - name: PORT
-                value: "80"
+              - name: TARGET 
+                value: "Go Sample v1.0"
 
