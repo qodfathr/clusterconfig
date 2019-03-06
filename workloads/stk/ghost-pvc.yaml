@@ -4,7 +4,7 @@ metadata:
   name: ghost-pvc
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   volumeMode: Filesystem
   resources:
     requests:

@@ -8,12 +8,12 @@ spec:
   capacity:
     storage: 90Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   iscsi:
     targetPortal: 192.168.1.4:3260
     portals: ['192.168.1.4:3260']
-    iqn: iqn.1991-05.com.microsoft:bmf-k8s-target
-    lun: 1
+    iqn: iqn.1991-05.com.microsoft:bmf-ghost-stk-target
+    lun: 0
     fsType: 'ext4'
     readOnly: false
 
