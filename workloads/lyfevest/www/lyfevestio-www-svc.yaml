@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
@@ -9,7 +10,7 @@ metadata:
     flux.weave.works/automated: "true"
     flux.weave.works/tag.lyfevestio-www: semver:*
 spec:
-  replicas: 1 
+  replicas: 1
   selector:
     matchLabels:
       app: "lyfevestio-www"
@@ -20,11 +21,10 @@ spec:
     spec:
       containers:
       - name: "lyfevestio-www"
-        image: "lyfevest/lyfevestio-www"
+        image: "lyfevest/lyfevestio-www:0.3"
         ports:
         - name: http
           containerPort: 80
-
 ---
 apiVersion: v1
 kind: Service
