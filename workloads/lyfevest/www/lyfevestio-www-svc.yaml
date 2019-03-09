@@ -1,0 +1,38 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: lyfevestio-www 
+  namespace: lyfevest
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: lyfevestio-www
+  template:
+    metadata:
+      labels:
+        app: lyfevestio-www
+    spec:
+      containers:
+      - name: lyfevestio-www
+        image: lyfevest/lyfevestio-www:0.3
+        ports:
+        - name: http
+          containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:lyfevestio-www 
+  namespace: lyfevest
+spec:
+  ports:
+  - name: http
+    port: 1234
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: lyfevestio-www
+  type: LoadBalancer
+  loadBalancerIP: 192.168.1.243
