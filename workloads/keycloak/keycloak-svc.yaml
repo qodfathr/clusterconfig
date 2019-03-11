@@ -1,0 +1,81 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: keycloak 
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak 
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.5
+        env:
+        - name: MYSQL_DATABASE
+          value: keycloak
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-secrets
+              key: mysql-user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-secrets
+              key: mysql-password
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-secrets
+              key: mysql-root-password
+        volumeMounts:
+        - mountPath: "/etc/mysql/conf.d"
+          name: keycloakdb-vol
+      - name: keycloak
+        image: jboss/keycloak
+        env:
+        - name: KEYCLOAK_USER
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-secrets
+              key: keycloak-user
+        - name: KEYCLOAK_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-secrets
+              key: keycloak-password
+        - name: DB_VENDOR
+          value: mysql
+        - name: JDBC_PARAMS
+          value: "useSSL=false&characterEncoding=UTF-8&allowPublicKeyRetrival=true"
+        - name: DB_ADDR
+          value: localhost
+        ports:
+        - name: http
+          containerPort: 8080
+      volumes:
+        - name: keycloakdb-vol
+          persistentVolumeClaim:
+            claimName: keycloakdb-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: default
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: keycloak
+  type: LoadBalancer
+  loadBalancerIP: 192.168.1.244
