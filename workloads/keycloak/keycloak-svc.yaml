@@ -35,7 +35,7 @@ spec:
               name: keycloak-secrets
               key: mysql-root-password
         volumeMounts:
-        - mountPath: "/etc/mysql/conf.d"
+        - mountPath: "/var/lib/mysql"
           name: keycloakdb-vol
       - name: keycloak
         image: jboss/keycloak
