@@ -56,6 +56,8 @@ spec:
           value: "useSSL=false&characterEncoding=UTF-8&allowPublicKeyRetrival=true"
         - name: DB_ADDR
           value: localhost
+        - name: PROXY_ADDRESS_FORWARDING
+          value: "true"
         ports:
         - name: http
           containerPort: 8080
