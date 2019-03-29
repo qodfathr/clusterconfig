@@ -40,4 +40,4 @@ spec:
   selector:
     app: "lyfevestio-api"
   type: LoadBalancer
-  loadBalancerIP: 192.168.1.244
+  loadBalancerIP: 192.168.1.245
