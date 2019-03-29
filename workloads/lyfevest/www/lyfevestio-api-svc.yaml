@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: "lyfevestio-api"
+  namespace: lyfevest
+  labels:
+    app: "lyfevestio-api"
+  annotations:
+    flux.weave.works/automated: "true"
+    flux.weave.works/tag.lyfevestio-api: semver:*
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "lyfevestio-api"
+  template:
+    metadata:
+      labels:
+        app: "lyfevestio-api"
+    spec:
+      containers:
+      - name: "lyfevestio-api"
+        image: "lyfevest/lyfevestio-api:0.0.1"
+        ports:
+        - name: http
+          containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "lyfevestio-api"
+  namespace: lyfevest
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: "lyfevestio-api"
+  type: LoadBalancer
+  loadBalancerIP: 192.168.1.244
