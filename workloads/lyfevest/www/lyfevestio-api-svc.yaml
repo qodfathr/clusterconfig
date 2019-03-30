@@ -8,7 +8,7 @@ metadata:
     app: "lyfevestio-api"
   annotations:
     flux.weave.works/automated: "true"
-    flux.weave.works/tag.lyfevestio-api: semver:*
+    flux.weave.works/tag.lyfevestio-api: glob:0.*
 spec:
   replicas: 1
   selector:
@@ -36,7 +36,7 @@ spec:
   - name: http
     port: 80
     protocol: TCP
-    targetPort: 3000 
+    targetPort: 3000
   selector:
     app: "lyfevestio-api"
   type: LoadBalancer
