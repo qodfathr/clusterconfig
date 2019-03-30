@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: "lyfevestio-www"
-        image: "lyfevest/lyfevestio-www:0.7.3"
+        image: "lyfevest/lyfevestio-www:0.7.7"
         ports:
         - name: http
           containerPort: 80
