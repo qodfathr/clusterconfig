@@ -2,26 +2,26 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: "lyfevestio-www"
+  name: "lyfevest-coming-soon"
   namespace: lyfevest
   labels:
-    app: "lyfevestio-www"
+    app: "lyfevest-coming-soon"
   annotations:
     flux.weave.works/automated: "true"
-    flux.weave.works/tag.lyfevestio-www: glob:0.*
+    flux.weave.works/tag.lyfevest-coming-soon: glob:0.*
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: "lyfevestio-www"
+      app: "lyfevest-coming-soon"
   template:
     metadata:
       labels:
-        app: "lyfevestio-www"
+        app: "lyfevest-coming-soon"
     spec:
       containers:
-      - name: "lyfevestio-www"
-        image: "lyfevest/lyfevestio-www:0.7.10"
+      - name: "lyfevest-coming-soon"
+        image: "lyfevest/lyfevest-coming-soon:0.1.0"
         ports:
         - name: http
           containerPort: 80
