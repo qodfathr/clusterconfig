@@ -1,316 +1,1742 @@
----
-# Source: gloo/templates/0-namespace.yaml
-
-
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: gloo-system
----
-# Source: gloo/templates/9-gateway-proxy-configmap.yaml
-
-# config_map
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: gateway-envoy-config
-  namespace: gloo-system
-  labels:
-    app: gloo
-data:
-
-  envoy.yaml: |
-    node:
-      cluster: gateway
-      id: "{{.PodName}}.{{.PodNamespace}}"
-      metadata:
-        # this line must match !
-        role: "{{.PodNamespace}}~gateway-proxy"
-    static_resources:
-      clusters:
-      - name: xds_cluster
-        connect_timeout: 5.000s
-        load_assignment:
-          cluster_name: xds_cluster
-          endpoints:
-          - lb_endpoints:
-            - endpoint:
-                address:
-                  socket_address:
-                    address: gloo
-                    port_value: 9977
-        http2_protocol_options: {}
-        type: STRICT_DNS
-    dynamic_resources:
-      ads_config:
-        api_type: GRPC
-        grpc_services:
-        - envoy_grpc: {cluster_name: xds_cluster}
-      cds_config:
-        ads: {}
-      lds_config:
-        ads: {}
-    admin:
-      access_log_path: /dev/null
-      address:
-        socket_address:
-          address: 127.0.0.1
-          port_value: 19000
----
-# Source: gloo/templates/1-namespace-clusterrole.yaml
-
-
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-    name: gloo-role
-rules:
-- apiGroups: [""]
-  resources: ["pods", "services", "secrets", "endpoints", "configmaps"]
-  verbs: ["*"]
-- apiGroups: [""]
-  resources: ["namespaces"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["apiextensions.k8s.io"]
-  resources: ["customresourcedefinitions"]
-  verbs: ["get", "create"]
-- apiGroups: ["gloo.solo.io"]
-  resources: ["settings", "upstreams", "proxies","virtualservices"]
-  verbs: ["*"]
-- apiGroups: ["gateway.solo.io"]
-  resources: ["virtualservices", "gateways"]
-  verbs: ["*"]
----
-# Source: gloo/templates/2-namespace-clusterrolebinding.yaml
-
-
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: gloo-role-binding
-subjects:
-- kind: ServiceAccount
-  name: default
-  namespace: gloo-system
-roleRef:
-  kind: ClusterRole
-  name: gloo-role
-  apiGroup: rbac.authorization.k8s.io
----
-# Source: gloo/templates/4-gloo-service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: gloo
-    gloo: gloo
-  name: gloo
-  namespace: gloo-system
-spec:
-  ports:
-  - name: grpc
-    port: 9977
-    protocol: TCP
-  selector:
-    gloo: gloo
-
----
-# Source: gloo/templates/8-gateway-proxy-service.yaml
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: gloo
-    gloo: gateway-proxy
-  name: gateway-proxy
-  namespace: gloo-system
-spec:
-  ports:
-  - port: 80
-    targetPort: 8080
-    protocol: TCP
-    name: http
-  - port: 443
-    targetPort: 8443
-    protocol: TCP
-    name: https
-  selector:
-    gloo: gateway-proxy
-  type: LoadBalancer
-  loadBalancerIP: 192.168.1.241
-
----
-# Source: gloo/templates/3-gloo-deployment.yaml
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    app: gloo
-    gloo: gloo
-  name: gloo
-  namespace: gloo-system
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      gloo: gloo
-  template:
-    metadata:
-      labels:
-        gloo: gloo
-    spec:
-      containers:
-      - image: "soloio/gloo:0.8.6"
-        imagePullPolicy: Always
-        name: gloo
-        ports:
-        - containerPort: 9977
-          name: grpc
-          protocol: TCP
-        env:
-          - name: POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-
-
----
-# Source: gloo/templates/5-discovery-deployment.yaml
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    app: gloo
-    gloo: discovery
-  name: discovery
-  namespace: gloo-system
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2019-03-03T18:27:08Z"
+    deletionGracePeriodSeconds: 30
+    deletionTimestamp: "2019-04-26T12:53:43Z"
+    generateName: discovery-577777bd8f-
+    labels:
       gloo: discovery
-  template:
-    metadata:
-      labels:
-        gloo: discovery
-    spec:
-      containers:
-      - image: "soloio/discovery:0.8.6"
-        imagePullPolicy: Always
-        name: discovery
-        env:
-          - name: POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-
-
----
-# Source: gloo/templates/6-gateway-deployment.yaml
-
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    app: gloo
-    gloo: gateway
-  name: gateway
-  namespace: gloo-system
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
+      pod-template-hash: 577777bd8f
+    name: discovery-577777bd8f-m6jx7
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: discovery-577777bd8f
+      uid: f3ed752f-3de1-11e9-b48e-00155d016e21
+    resourceVersion: "12207435"
+    selfLink: /api/v1/namespaces/gloo-system/pods/discovery-577777bd8f-m6jx7
+    uid: f3f74fa2-3de1-11e9-b48e-00155d016e21
+  spec:
+    containers:
+    - env:
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: soloio/discovery:0.8.6
+      imagePullPolicy: Always
+      name: discovery
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-bfsgr
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: node5
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: default-token-bfsgr
+      secret:
+        defaultMode: 420
+        secretName: default-token-bfsgr
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2019-03-03T18:27:08Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:20Z"
+      message: 'containers with unready status: [discovery]'
+      reason: ContainersNotReady
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:20Z"
+      message: 'containers with unready status: [discovery]'
+      reason: ContainersNotReady
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2019-03-03T18:27:08Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - image: soloio/discovery:0.8.6
+      imageID: ""
+      lastState: {}
+      name: discovery
+      ready: false
+      restartCount: 0
+      state:
+        waiting:
+          reason: ContainerCreating
+    hostIP: 192.168.1.34
+    phase: Pending
+    qosClass: BestEffort
+    startTime: "2019-03-03T18:27:08Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2019-04-26T12:53:12Z"
+    generateName: discovery-dd4f47d7c-
+    labels:
+      gloo: discovery
+      pod-template-hash: dd4f47d7c
+    name: discovery-dd4f47d7c-dfbxx
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: discovery-dd4f47d7c
+      uid: 3fbeba0c-6822-11e9-919e-00155d016e20
+    resourceVersion: "12207356"
+    selfLink: /api/v1/namespaces/gloo-system/pods/discovery-dd4f47d7c-dfbxx
+    uid: 3ff466b8-6822-11e9-919e-00155d016e20
+  spec:
+    containers:
+    - env:
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: quay.io/solo-io/discovery:0.13.19
+      imagePullPolicy: Always
+      name: discovery
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        procMount: Default
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 10101
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-bfsgr
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: node4
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: default-token-bfsgr
+      secret:
+        defaultMode: 420
+        secretName: default-token-bfsgr
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:12Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:12Z"
+      message: 'containers with unready status: [discovery]'
+      reason: ContainersNotReady
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:12Z"
+      message: 'containers with unready status: [discovery]'
+      reason: ContainersNotReady
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:12Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - image: quay.io/solo-io/discovery:0.13.19
+      imageID: ""
+      lastState: {}
+      name: discovery
+      ready: false
+      restartCount: 0
+      state:
+        waiting:
+          reason: ContainerCreating
+    hostIP: 192.168.1.33
+    phase: Pending
+    qosClass: BestEffort
+    startTime: "2019-04-26T12:53:12Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2019-04-26T12:53:12Z"
+    generateName: gateway-cc575477c-
+    labels:
       gloo: gateway
-  template:
-    metadata:
-      labels:
-        gloo: gateway
-    spec:
-      containers:
-      - image: "soloio/gateway:0.8.6"
-        imagePullPolicy: Always
-        name: gateway
-        env:
+      pod-template-hash: cc575477c
+    name: gateway-cc575477c-7zkm9
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: gateway-cc575477c
+      uid: 3fc90906-6822-11e9-919e-00155d016e20
+    resourceVersion: "12207381"
+    selfLink: /api/v1/namespaces/gloo-system/pods/gateway-cc575477c-7zkm9
+    uid: 40632a22-6822-11e9-919e-00155d016e20
+  spec:
+    containers:
+    - env:
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: quay.io/solo-io/gateway:0.13.19
+      imagePullPolicy: Always
+      name: gateway
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        procMount: Default
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 10101
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-bfsgr
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: node2
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: default-token-bfsgr
+      secret:
+        defaultMode: 420
+        secretName: default-token-bfsgr
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:13Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:13Z"
+      message: 'containers with unready status: [gateway]'
+      reason: ContainersNotReady
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:13Z"
+      message: 'containers with unready status: [gateway]'
+      reason: ContainersNotReady
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:13Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - image: quay.io/solo-io/gateway:0.13.19
+      imageID: ""
+      lastState: {}
+      name: gateway
+      ready: false
+      restartCount: 0
+      state:
+        waiting:
+          reason: ContainerCreating
+    hostIP: 192.168.1.31
+    phase: Pending
+    qosClass: BestEffort
+    startTime: "2019-04-26T12:53:13Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2019-04-26T12:53:12Z"
+    generateName: gateway-proxy-68c548bf4f-
+    labels:
+      gloo: gateway-proxy
+      pod-template-hash: 68c548bf4f
+    name: gateway-proxy-68c548bf4f-45mpd
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: gateway-proxy-68c548bf4f
+      uid: 3fef10bb-6822-11e9-919e-00155d016e20
+    resourceVersion: "12207373"
+    selfLink: /api/v1/namespaces/gloo-system/pods/gateway-proxy-68c548bf4f-45mpd
+    uid: 40134f3e-6822-11e9-919e-00155d016e20
+  spec:
+    containers:
+    - args:
+      - --disable-hot-restart
+      env:
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      image: quay.io/solo-io/gloo-envoy-wrapper:0.13.19
+      imagePullPolicy: Always
+      name: gateway-proxy
+      ports:
+      - containerPort: 8080
+        name: http
+        protocol: TCP
+      - containerPort: 8443
+        name: https
+        protocol: TCP
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          add:
+          - NET_BIND_SERVICE
+          drop:
+          - ALL
+        procMount: Default
+        readOnlyRootFilesystem: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /etc/envoy
+        name: envoy-config
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-bfsgr
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: node2
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - configMap:
+        defaultMode: 420
+        name: gateway-proxy-envoy-config
+      name: envoy-config
+    - name: default-token-bfsgr
+      secret:
+        defaultMode: 420
+        secretName: default-token-bfsgr
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:13Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:13Z"
+      message: 'containers with unready status: [gateway-proxy]'
+      reason: ContainersNotReady
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:13Z"
+      message: 'containers with unready status: [gateway-proxy]'
+      reason: ContainersNotReady
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:12Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - image: quay.io/solo-io/gloo-envoy-wrapper:0.13.19
+      imageID: ""
+      lastState: {}
+      name: gateway-proxy
+      ready: false
+      restartCount: 0
+      state:
+        waiting:
+          reason: ContainerCreating
+    hostIP: 192.168.1.31
+    phase: Pending
+    qosClass: BestEffort
+    startTime: "2019-04-26T12:53:13Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2019-04-26T12:53:12Z"
+    generateName: gloo-599dc97d6b-
+    labels:
+      gloo: gloo
+      pod-template-hash: 599dc97d6b
+    name: gloo-599dc97d6b-4gqjn
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: gloo-599dc97d6b
+      uid: 3fbc9b91-6822-11e9-919e-00155d016e20
+    resourceVersion: "12207348"
+    selfLink: /api/v1/namespaces/gloo-system/pods/gloo-599dc97d6b-4gqjn
+    uid: 3fec667f-6822-11e9-919e-00155d016e20
+  spec:
+    containers:
+    - env:
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: quay.io/solo-io/gloo:0.13.19
+      imagePullPolicy: Always
+      name: gloo
+      ports:
+      - containerPort: 9977
+        name: grpc
+        protocol: TCP
+      resources:
+        requests:
+          cpu: "1"
+          memory: 256Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        procMount: Default
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 10101
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-bfsgr
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: node5
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: default-token-bfsgr
+      secret:
+        defaultMode: 420
+        secretName: default-token-bfsgr
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:12Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:12Z"
+      message: 'containers with unready status: [gloo]'
+      reason: ContainersNotReady
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:12Z"
+      message: 'containers with unready status: [gloo]'
+      reason: ContainersNotReady
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:12Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - image: quay.io/solo-io/gloo:0.13.19
+      imageID: ""
+      lastState: {}
+      name: gloo
+      ready: false
+      restartCount: 0
+      state:
+        waiting:
+          reason: ContainerCreating
+    hostIP: 192.168.1.34
+    phase: Pending
+    qosClass: Burstable
+    startTime: "2019-04-26T12:53:12Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2019-03-03T18:27:08Z"
+    deletionGracePeriodSeconds: 30
+    deletionTimestamp: "2019-04-26T12:53:43Z"
+    generateName: gloo-77b9bf6865-
+    labels:
+      gloo: gloo
+      pod-template-hash: 77b9bf6865
+    name: gloo-77b9bf6865-h99fn
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: gloo-77b9bf6865
+      uid: f415fb00-3de1-11e9-b48e-00155d016e21
+    resourceVersion: "12207451"
+    selfLink: /api/v1/namespaces/gloo-system/pods/gloo-77b9bf6865-h99fn
+    uid: f41b2689-3de1-11e9-b48e-00155d016e21
+  spec:
+    containers:
+    - env:
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: soloio/gloo:0.8.6
+      imagePullPolicy: Always
+      name: gloo
+      ports:
+      - containerPort: 9977
+        name: grpc
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-bfsgr
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: node4
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: default-token-bfsgr
+      secret:
+        defaultMode: 420
+        secretName: default-token-bfsgr
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2019-03-03T18:27:08Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:22Z"
+      message: 'containers with unready status: [gloo]'
+      reason: ContainersNotReady
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2019-04-26T12:53:22Z"
+      message: 'containers with unready status: [gloo]'
+      reason: ContainersNotReady
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2019-03-03T18:27:08Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - image: soloio/gloo:0.8.6
+      imageID: ""
+      lastState:
+        terminated:
+          containerID: docker://701b878a6b2b1a9aa5dcfd94fccf08d91043340bcc35e1341784a1ab14a89cc3
+          exitCode: 2
+          finishedAt: "2019-04-22T02:51:56Z"
+          reason: Error
+          startedAt: "2019-03-03T18:28:10Z"
+      name: gloo
+      ready: false
+      restartCount: 1
+      state:
+        terminated:
+          exitCode: 0
+          finishedAt: null
+          startedAt: null
+    hostIP: 192.168.1.33
+    phase: Running
+    qosClass: BestEffort
+    startTime: "2019-03-03T18:27:08Z"
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"gloo","gloo":"gateway-proxy"},"name":"gateway-proxy","namespace":"gloo-system"},"spec":{"ports":[{"name":"http","port":80,"protocol":"TCP","targetPort":8080},{"name":"https","port":443,"protocol":"TCP","targetPort":8443}],"selector":{"gloo":"gateway-proxy"},"type":"LoadBalancer"}}
+    creationTimestamp: "2019-03-03T18:27:07Z"
+    labels:
+      app: gloo
+      gloo: gateway-proxy
+    name: gateway-proxy
+    namespace: gloo-system
+    resourceVersion: "12207315"
+    selfLink: /api/v1/namespaces/gloo-system/services/gateway-proxy
+    uid: f37dc106-3de1-11e9-919e-00155d016e20
+  spec:
+    clusterIP: 10.233.53.45
+    externalTrafficPolicy: Cluster
+    ports:
+    - name: http
+      nodePort: 31761
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+    - name: https
+      nodePort: 31017
+      port: 443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      gloo: gateway-proxy
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.241
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"gloo","gloo":"gloo"},"name":"gloo","namespace":"gloo-system"},"spec":{"ports":[{"name":"grpc","port":9977,"protocol":"TCP"}],"selector":{"gloo":"gloo"}}}
+    creationTimestamp: "2019-03-03T18:27:07Z"
+    labels:
+      app: gloo
+      gloo: gloo
+    name: gloo
+    namespace: gloo-system
+    resourceVersion: "3776043"
+    selfLink: /api/v1/namespaces/gloo-system/services/gloo
+    uid: f3940a84-3de1-11e9-919e-00155d016e20
+  spec:
+    clusterIP: 10.233.34.39
+    ports:
+    - name: grpc
+      port: 9977
+      protocol: TCP
+      targetPort: 9977
+    selector:
+      gloo: gloo
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "2"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"extensions/v1beta1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"gloo","gloo":"discovery"},"name":"discovery","namespace":"gloo-system"},"spec":{"replicas":1,"selector":{"matchLabels":{"gloo":"discovery"}},"template":{"metadata":{"labels":{"gloo":"discovery"}},"spec":{"containers":[{"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"image":"quay.io/solo-io/discovery:0.13.19","imagePullPolicy":"Always","name":"discovery","securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsNonRoot":true,"runAsUser":10101}}]}}}}
+    creationTimestamp: "2019-03-03T18:27:08Z"
+    generation: 2
+    labels:
+      app: gloo
+      gloo: discovery
+    name: discovery
+    namespace: gloo-system
+    resourceVersion: "12207401"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/deployments/discovery
+    uid: f3e4d73c-3de1-11e9-919e-00155d016e20
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        gloo: discovery
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: discovery
+      spec:
+        containers:
+        - env:
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:
+                apiVersion: v1
                 fieldPath: metadata.namespace
----
-# Source: gloo/templates/7-gateway-proxy-deployment.yaml
-
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    app: gloo
-    gloo: gateway-proxy
-  name: gateway-proxy
-  namespace: gloo-system
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
+          image: quay.io/solo-io/discovery:0.13.19
+          imagePullPolicy: Always
+          name: discovery
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            procMount: Default
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10101
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    conditions:
+    - lastTransitionTime: "2019-03-03T18:27:08Z"
+      lastUpdateTime: "2019-03-03T18:27:08Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    observedGeneration: 2
+    replicas: 1
+    unavailableReplicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "2"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"extensions/v1beta1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"gloo","gloo":"gateway"},"name":"gateway","namespace":"gloo-system"},"spec":{"replicas":1,"selector":{"matchLabels":{"gloo":"gateway"}},"template":{"metadata":{"labels":{"gloo":"gateway"}},"spec":{"containers":[{"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"image":"quay.io/solo-io/gateway:0.13.19","imagePullPolicy":"Always","name":"gateway","securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsNonRoot":true,"runAsUser":10101}}]}}}}
+    creationTimestamp: "2019-03-03T18:27:08Z"
+    generation: 2
+    labels:
+      app: gloo
+      gloo: gateway
+    name: gateway
+    namespace: gloo-system
+    resourceVersion: "12207395"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/deployments/gateway
+    uid: f3edd979-3de1-11e9-919e-00155d016e20
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        gloo: gateway
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: gateway
+      spec:
+        containers:
+        - env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/solo-io/gateway:0.13.19
+          imagePullPolicy: Always
+          name: gateway
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            procMount: Default
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10101
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    conditions:
+    - lastTransitionTime: "2019-03-03T18:27:08Z"
+      lastUpdateTime: "2019-03-03T18:27:08Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    observedGeneration: 2
+    replicas: 1
+    unavailableReplicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "2"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"extensions/v1beta1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"gloo","gloo":"gateway-proxy"},"name":"gateway-proxy","namespace":"gloo-system"},"spec":{"replicas":1,"selector":{"matchLabels":{"gloo":"gateway-proxy"}},"template":{"metadata":{"labels":{"gloo":"gateway-proxy"}},"spec":{"containers":[{"args":["--disable-hot-restart"],"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}},{"name":"POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}}],"image":"quay.io/solo-io/gloo-envoy-wrapper:0.13.19","imagePullPolicy":"Always","name":"gateway-proxy","ports":[{"containerPort":8080,"name":"http","protocol":"TCP"},{"containerPort":8443,"name":"https","protocol":"TCP"}],"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"add":["NET_BIND_SERVICE"],"drop":["ALL"]},"readOnlyRootFilesystem":true},"volumeMounts":[{"mountPath":"/etc/envoy","name":"envoy-config"}]}],"volumes":[{"configMap":{"name":"gateway-proxy-envoy-config"},"name":"envoy-config"}]}}}}
+    creationTimestamp: "2019-03-03T18:27:08Z"
+    generation: 2
+    labels:
+      app: gloo
       gloo: gateway-proxy
-  template:
-    metadata:
-      labels:
+    name: gateway-proxy
+    namespace: gloo-system
+    resourceVersion: "12207408"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/deployments/gateway-proxy
+    uid: f3f89f9e-3de1-11e9-919e-00155d016e20
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
         gloo: gateway-proxy
-    spec:
-      containers:
-      - args: ["--disable-hot-restart"]
-        env:
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        image: soloio/gloo-envoy-wrapper:0.8.6
-        imagePullPolicy: Always
-        name: gateway-proxy
-        ports:
-        - containerPort: 8080
-          name: http
-          protocol: TCP
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        volumeMounts:
-        - mountPath: /etc/envoy
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: gateway-proxy
+      spec:
+        containers:
+        - args:
+          - --disable-hot-restart
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          image: quay.io/solo-io/gloo-envoy-wrapper:0.13.19
+          imagePullPolicy: Always
+          name: gateway-proxy
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8443
+            name: https
+            protocol: TCP
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+              - NET_BIND_SERVICE
+              drop:
+              - ALL
+            procMount: Default
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/envoy
+            name: envoy-config
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: gateway-proxy-envoy-config
           name: envoy-config
-      volumes:
-      - configMap:
-          name: gateway-envoy-config
-        name: envoy-config
----
-# Source: gloo/templates/10-ingress-deployment.yaml
-
----
-# Source: gloo/templates/11-ingress-proxy-deployment.yaml
-
----
-# Source: gloo/templates/12-ingress-proxy-configmap.yaml
-
----
-# Source: gloo/templates/13-ingress-proxy-service.yaml
-
----
-# Source: gloo/templates/14-clusteringress-proxy-deployment.yaml
-
-
----
-# Source: gloo/templates/15-clusteringress-proxy-configmap.yaml
-
----
-# Source: gloo/templates/16-clusteringress-proxy-service.yaml
-
----
-# Source: gloo/templates/17-knative-no-istio-0.3.0.yaml
-
----
-# Source: gloo/templates/18-settings.yaml
-
-
+  status:
+    conditions:
+    - lastTransitionTime: "2019-03-03T18:27:08Z"
+      lastUpdateTime: "2019-03-03T18:27:08Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    observedGeneration: 2
+    replicas: 1
+    unavailableReplicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "2"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"extensions/v1beta1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"gloo","gloo":"gloo"},"name":"gloo","namespace":"gloo-system"},"spec":{"replicas":1,"selector":{"matchLabels":{"gloo":"gloo"}},"template":{"metadata":{"labels":{"gloo":"gloo"}},"spec":{"containers":[{"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"image":"quay.io/solo-io/gloo:0.13.19","imagePullPolicy":"Always","name":"gloo","ports":[{"containerPort":9977,"name":"grpc","protocol":"TCP"}],"resources":{"requests":{"cpu":1,"memory":"256Mi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsNonRoot":true,"runAsUser":10101}}]}}}}
+    creationTimestamp: "2019-03-03T18:27:08Z"
+    generation: 2
+    labels:
+      app: gloo
+      gloo: gloo
+    name: gloo
+    namespace: gloo-system
+    resourceVersion: "12207402"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/deployments/gloo
+    uid: f40f0407-3de1-11e9-919e-00155d016e20
+  spec:
+    progressDeadlineSeconds: 2147483647
+    replicas: 1
+    revisionHistoryLimit: 2147483647
+    selector:
+      matchLabels:
+        gloo: gloo
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: gloo
+      spec:
+        containers:
+        - env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/solo-io/gloo:0.13.19
+          imagePullPolicy: Always
+          name: gloo
+          ports:
+          - containerPort: 9977
+            name: grpc
+            protocol: TCP
+          resources:
+            requests:
+              cpu: "1"
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            procMount: Default
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10101
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    conditions:
+    - lastTransitionTime: "2019-03-03T18:27:08Z"
+      lastUpdateTime: "2019-03-03T18:27:08Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    observedGeneration: 2
+    replicas: 1
+    unavailableReplicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: "2019-03-03T18:27:08Z"
+    generation: 2
+    labels:
+      gloo: discovery
+      pod-template-hash: 577777bd8f
+    name: discovery-577777bd8f
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: discovery
+      uid: f3e4d73c-3de1-11e9-919e-00155d016e20
+    resourceVersion: "12207389"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/replicasets/discovery-577777bd8f
+    uid: f3ed752f-3de1-11e9-b48e-00155d016e21
+  spec:
+    replicas: 0
+    selector:
+      matchLabels:
+        gloo: discovery
+        pod-template-hash: 577777bd8f
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: discovery
+          pod-template-hash: 577777bd8f
+      spec:
+        containers:
+        - env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: soloio/discovery:0.8.6
+          imagePullPolicy: Always
+          name: discovery
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    observedGeneration: 2
+    replicas: 0
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "2"
+    creationTimestamp: "2019-04-26T12:53:11Z"
+    generation: 1
+    labels:
+      gloo: discovery
+      pod-template-hash: dd4f47d7c
+    name: discovery-dd4f47d7c
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: discovery
+      uid: f3e4d73c-3de1-11e9-919e-00155d016e20
+    resourceVersion: "12207379"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/replicasets/discovery-dd4f47d7c
+    uid: 3fbeba0c-6822-11e9-919e-00155d016e20
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        gloo: discovery
+        pod-template-hash: dd4f47d7c
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: discovery
+          pod-template-hash: dd4f47d7c
+      spec:
+        containers:
+        - env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/solo-io/discovery:0.13.19
+          imagePullPolicy: Always
+          name: discovery
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            procMount: Default
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10101
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: "2019-03-03T18:27:08Z"
+    generation: 2
+    labels:
+      gloo: gateway
+      pod-template-hash: 59c767c477
+    name: gateway-59c767c477
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: gateway
+      uid: f3edd979-3de1-11e9-919e-00155d016e20
+    resourceVersion: "12207388"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/replicasets/gateway-59c767c477
+    uid: f3f21902-3de1-11e9-b48e-00155d016e21
+  spec:
+    replicas: 0
+    selector:
+      matchLabels:
+        gloo: gateway
+        pod-template-hash: 59c767c477
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: gateway
+          pod-template-hash: 59c767c477
+      spec:
+        containers:
+        - env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: soloio/gateway:0.8.6
+          imagePullPolicy: Always
+          name: gateway
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    observedGeneration: 2
+    replicas: 0
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "2"
+    creationTimestamp: "2019-04-26T12:53:11Z"
+    generation: 1
+    labels:
+      gloo: gateway
+      pod-template-hash: cc575477c
+    name: gateway-cc575477c
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: gateway
+      uid: f3edd979-3de1-11e9-919e-00155d016e20
+    resourceVersion: "12207387"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/replicasets/gateway-cc575477c
+    uid: 3fc90906-6822-11e9-919e-00155d016e20
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        gloo: gateway
+        pod-template-hash: cc575477c
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: gateway
+          pod-template-hash: cc575477c
+      spec:
+        containers:
+        - env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/solo-io/gateway:0.13.19
+          imagePullPolicy: Always
+          name: gateway
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            procMount: Default
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10101
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "2"
+    creationTimestamp: "2019-04-26T12:53:12Z"
+    generation: 1
+    labels:
+      gloo: gateway-proxy
+      pod-template-hash: 68c548bf4f
+    name: gateway-proxy-68c548bf4f
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: gateway-proxy
+      uid: f3f89f9e-3de1-11e9-919e-00155d016e20
+    resourceVersion: "12207383"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/replicasets/gateway-proxy-68c548bf4f
+    uid: 3fef10bb-6822-11e9-919e-00155d016e20
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        gloo: gateway-proxy
+        pod-template-hash: 68c548bf4f
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: gateway-proxy
+          pod-template-hash: 68c548bf4f
+      spec:
+        containers:
+        - args:
+          - --disable-hot-restart
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          image: quay.io/solo-io/gloo-envoy-wrapper:0.13.19
+          imagePullPolicy: Always
+          name: gateway-proxy
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8443
+            name: https
+            protocol: TCP
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+              - NET_BIND_SERVICE
+              drop:
+              - ALL
+            procMount: Default
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/envoy
+            name: envoy-config
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: gateway-proxy-envoy-config
+          name: envoy-config
+  status:
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: "2019-03-03T18:27:08Z"
+    generation: 2
+    labels:
+      gloo: gateway-proxy
+      pod-template-hash: 6f6745c9cc
+    name: gateway-proxy-6f6745c9cc
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: gateway-proxy
+      uid: f3f89f9e-3de1-11e9-919e-00155d016e20
+    resourceVersion: "12207406"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/replicasets/gateway-proxy-6f6745c9cc
+    uid: f4030908-3de1-11e9-b48e-00155d016e21
+  spec:
+    replicas: 0
+    selector:
+      matchLabels:
+        gloo: gateway-proxy
+        pod-template-hash: 6f6745c9cc
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: gateway-proxy
+          pod-template-hash: 6f6745c9cc
+      spec:
+        containers:
+        - args:
+          - --disable-hot-restart
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          image: soloio/gloo-envoy-wrapper:0.8.6
+          imagePullPolicy: Always
+          name: gateway-proxy
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8443
+            name: https
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/envoy
+            name: envoy-config
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: gateway-envoy-config
+          name: envoy-config
+  status:
+    observedGeneration: 2
+    replicas: 0
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "2"
+    creationTimestamp: "2019-04-26T12:53:11Z"
+    generation: 1
+    labels:
+      gloo: gloo
+      pod-template-hash: 599dc97d6b
+    name: gloo-599dc97d6b
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: gloo
+      uid: f40f0407-3de1-11e9-919e-00155d016e20
+    resourceVersion: "12207362"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/replicasets/gloo-599dc97d6b
+    uid: 3fbc9b91-6822-11e9-919e-00155d016e20
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        gloo: gloo
+        pod-template-hash: 599dc97d6b
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: gloo
+          pod-template-hash: 599dc97d6b
+      spec:
+        containers:
+        - env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: quay.io/solo-io/gloo:0.13.19
+          imagePullPolicy: Always
+          name: gloo
+          ports:
+          - containerPort: 9977
+            name: grpc
+            protocol: TCP
+          resources:
+            requests:
+              cpu: "1"
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            procMount: Default
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10101
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    fullyLabeledReplicas: 1
+    observedGeneration: 1
+    replicas: 1
+- apiVersion: apps/v1
+  kind: ReplicaSet
+  metadata:
+    annotations:
+      deployment.kubernetes.io/desired-replicas: "1"
+      deployment.kubernetes.io/max-replicas: "2"
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: "2019-03-03T18:27:08Z"
+    generation: 2
+    labels:
+      gloo: gloo
+      pod-template-hash: 77b9bf6865
+    name: gloo-77b9bf6865
+    namespace: gloo-system
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: gloo
+      uid: f40f0407-3de1-11e9-919e-00155d016e20
+    resourceVersion: "12207393"
+    selfLink: /apis/apps/v1/namespaces/gloo-system/replicasets/gloo-77b9bf6865
+    uid: f415fb00-3de1-11e9-b48e-00155d016e21
+  spec:
+    replicas: 0
+    selector:
+      matchLabels:
+        gloo: gloo
+        pod-template-hash: 77b9bf6865
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          gloo: gloo
+          pod-template-hash: 77b9bf6865
+      spec:
+        containers:
+        - env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: soloio/gloo:0.8.6
+          imagePullPolicy: Always
+          name: gloo
+          ports:
+          - containerPort: 9977
+            name: grpc
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    observedGeneration: 2
+    replicas: 0
+- apiVersion: networking.internal.knative.dev/v1alpha1
+  kind: ClusterIngress
+  metadata:
+    creationTimestamp: "2019-02-22T02:21:37Z"
+    generateName: helloworld-go-
+    generation: 29
+    labels:
+      serving.knative.dev/route: helloworld-go
+      serving.knative.dev/routeNamespace: default
+    name: helloworld-go-p5x5m
+    ownerReferences:
+    - apiVersion: serving.knative.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Route
+      name: helloworld-go
+      uid: 9193e233-3648-11e9-b48e-00155d016e21
+    resourceVersion: "3770515"
+    selfLink: /apis/networking.internal.knative.dev/v1alpha1/clusteringresses/helloworld-go-p5x5m
+    uid: 94fb4748-3648-11e9-b48e-00155d016e21
+  spec:
+    generation: 29
+    rules:
+    - hosts:
+      - helloworld-go.default.example.com
+      - helloworld-go.default.svc.cluster.local
+      - helloworld-go.default.svc
+      - helloworld-go.default
+      http:
+        paths:
+        - appendHeaders:
+            knative-serving-namespace: default
+            knative-serving-revision: helloworld-go-00002
+          retries:
+            attempts: 3
+            perTryTimeout: 10m0s
+          splits:
+          - percent: 100
+            serviceName: activator-service
+            serviceNamespace: knative-serving
+            servicePort: 80
+          timeout: 10m0s
+    visibility: ExternalIP
+  status:
+    conditions:
+    - lastTransitionTime: "2019-02-22T02:21:37Z"
+      severity: Error
+      status: "True"
+      type: LoadBalancerReady
+    - lastTransitionTime: "2019-02-22T02:21:37Z"
+      severity: Error
+      status: "True"
+      type: NetworkConfigured
+    - lastTransitionTime: "2019-02-22T02:21:37Z"
+      severity: Error
+      status: "True"
+      type: Ready
+    loadBalancer:
+      ingress:
+      - domainInternal: clusteringress-proxy.gloo-system.svc.cluster.local
+- apiVersion: networking.internal.knative.dev/v1alpha1
+  kind: ClusterIngress
+  metadata:
+    creationTimestamp: "2019-02-22T19:19:46Z"
+    generateName: nginx-gloo-
+    generation: 325
+    labels:
+      serving.knative.dev/route: nginx-gloo
+      serving.knative.dev/routeNamespace: default
+    name: nginx-gloo-kt758
+    ownerReferences:
+    - apiVersion: serving.knative.dev/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Route
+      name: nginx-gloo
+      uid: b3ee45d7-36d6-11e9-919e-00155d016e20
+    resourceVersion: "3764256"
+    selfLink: /apis/networking.internal.knative.dev/v1alpha1/clusteringresses/nginx-gloo-kt758
+    uid: d103d62a-36d6-11e9-919e-00155d016e20
+  spec:
+    generation: 325
+    rules:
+    - hosts:
+      - nginx-gloo.default.example.com
+      - nginx-gloo.default.svc.cluster.local
+      - nginx-gloo.default.svc
+      - nginx-gloo.default
+      http:
+        paths:
+        - appendHeaders:
+            knative-serving-namespace: default
+            knative-serving-revision: nginx-gloo-00001
+          retries:
+            attempts: 3
+            perTryTimeout: 10m0s
+          splits:
+          - percent: 100
+            serviceName: activator-service
+            serviceNamespace: knative-serving
+            servicePort: 80
+          timeout: 10m0s
+    visibility: ExternalIP
+  status:
+    conditions:
+    - lastTransitionTime: "2019-02-22T19:19:47Z"
+      severity: Error
+      status: "True"
+      type: LoadBalancerReady
+    - lastTransitionTime: "2019-02-22T19:19:47Z"
+      severity: Error
+      status: "True"
+      type: NetworkConfigured
+    - lastTransitionTime: "2019-02-22T19:19:47Z"
+      severity: Error
+      status: "True"
+      type: Ready
+    loadBalancer:
+      ingress:
+      - domainInternal: clusteringress-proxy.gloo-system.svc.cluster.local
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
