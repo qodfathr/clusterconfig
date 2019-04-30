@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: "lyfevest-coming-soon"
-        image: "lyfevest/lyfevest-coming-soon:1.2.0"
+        image: "lyfevest/lyfevest-coming-soon:1.2.1"
         ports:
         - name: http
           containerPort: 80
