@@ -47,7 +47,7 @@ spec:
               key: keycloak-api-secret
         - name: KEYCLOAK_CLIENT_SECRET
           valueFrom:
-            secretRef:
+            secretKeyRef:
               name: lyfevest-secret
               key: keycloak-client-secret
 ---
