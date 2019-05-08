@@ -25,6 +25,31 @@ spec:
         ports:
         - name: http
           containerPort: 80
+      - env:
+        - name: DB_USER
+          value: lvruntime
+        - name: DB_SCHEMA
+          value: lyfevest-prod
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+               name: lyfevest-secrets
+               key: db-password
+        - name: RECAPTCHA_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: lyfevest-secret
+              key: recaptcha-secret
+        - name: KEYCLOAK_API_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: lyfevest-secret
+              key: keycloak-api-secret
+        - name: KEYCLOAK_CLIENT_SECRET
+          valueFrom:
+            secretRef:
+              name: lyfevest-secret
+              key: keycloak-client-secret
 ---
 apiVersion: v1
 kind: Service
