@@ -38,17 +38,17 @@ spec:
         - name: RECAPTCHA_SECRET
           valueFrom:
             secretKeyRef:
-              name: lyfevest-secret
+              name: lyfevest-secrets
               key: recaptcha-secret
         - name: KEYCLOAK_API_SECRET
           valueFrom:
             secretKeyRef:
-              name: lyfevest-secret
+              name: lyfevest-secrets
               key: keycloak-api-secret
         - name: KEYCLOAK_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: lyfevest-secret
+              name: lyfevest-secrets
               key: keycloak-client-secret
 ---
 apiVersion: v1
