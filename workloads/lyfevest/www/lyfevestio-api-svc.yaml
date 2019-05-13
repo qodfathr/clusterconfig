@@ -50,6 +50,10 @@ spec:
             secretKeyRef:
               name: lyfevest-secrets
               key: keycloak-client-secret
+        - name: LV_API_HOST
+          value: api.lyfevest.io
+        - name: LV_AUTH_HOST
+          value: lyfevest.io
 ---
 apiVersion: v1
 kind: Service
