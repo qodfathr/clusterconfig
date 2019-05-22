@@ -38,7 +38,8 @@ spec:
         - mountPath: "/var/lib/mysql"
           name: keycloakdb-vol
       - name: keycloak
-        image: jboss/keycloak
+        image: jboss/keycloak:4.8.3.Final
+        args: ["-b", "0.0.0.0", "-Dkeycloak.profile.feature.token_exchange=enabled"]
         env:
         - name: KEYCLOAK_USER
           valueFrom:
