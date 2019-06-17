@@ -54,6 +54,13 @@ spec:
           value: api.lyfevest.io
         - name: LV_AUTH_HOST
           value: lyfevest.io
+        - name: LV_URL
+          value: https://lyfevest.io
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: lyfevest-secrets
+              key: smtp-password
 ---
 apiVersion: v1
 kind: Service
