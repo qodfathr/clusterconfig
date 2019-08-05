@@ -61,7 +61,12 @@ spec:
           valueFrom:
             secretKeyRef:
               name: keycloak-secrets
-              key: keycloak-user
+              key: mysql-user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-secrets
+              key: mysql-password
         - name: PROXY_ADDRESS_FORWARDING
           value: "true"
         ports:
