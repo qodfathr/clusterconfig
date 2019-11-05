@@ -8,7 +8,6 @@ metadata:
     app: "lyfevestio-api"
   annotations:
     flux.weave.works/automated: "true"
-    flux.weave.works/tag.lyfevestio-api: glob:0.*
 spec:
   replicas: 1
   selector:
@@ -21,7 +20,11 @@ spec:
     spec:
       containers:
       - name: "lyfevestio-api"
+<<<<<<< HEAD
+        image: "gcr.io/lyfevest-io-prod-73019/github.com/lyfevest/lyfevestio-api:a4a7ae5"
+=======
         image: "lyfevest/lyfevestio-api:0.19.0"
+>>>>>>> 778d2b0c9c4c3c1863e5dc02cfabd6be28109f55
         ports:
         - name: http
           containerPort: 80
@@ -61,6 +64,8 @@ spec:
             secretKeyRef:
               name: lyfevest-secrets
               key: smtp-password
+      imagePullSecrets:
+      - name: regcred
 ---
 apiVersion: v1
 kind: Service
