@@ -26,9 +26,9 @@ spec:
           containerPort: 80
         env:
         - name: DB_USER
-          value: lvruntime
+          value: lvruntime-beta
         - name: DB_SCHEMA
-          value: lyfevest-prod
+          value: lyfevest-beta
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -50,11 +50,11 @@ spec:
               name: lyfevest-secrets
               key: keycloak-client-secret
         - name: LV_API_HOST
-          value: api.lyfevest.io
+          value: api.beta.lyfevest.io
         - name: LV_AUTH_HOST
-          value: lyfevest.io
+          value: beta.lyfevest.io
         - name: LV_URL
-          value: https://lyfevest.io
+          value: https://beta.lyfevest.io
         - name: SMTP_PASSWORD
           valueFrom:
             secretKeyRef:
