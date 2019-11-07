@@ -60,6 +60,16 @@ spec:
             secretKeyRef:
               name: lyfevest-secrets
               key: smtp-password
+        - name: STRIPE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: lyfevest-secrets
+              key: stripe-api-key
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: lyfevest-secrets
+              key: stripe-secret-key
       imagePullSecrets:
       - name: regcred
 ---
