@@ -65,11 +65,11 @@ spec:
             secretKeyRef:
               name: lyfevest-secrets
               key: stripe-api-key
-        - name: STRIPE_SECRET_KEY
+        - name: STRIPE_PUBLIC_KEY
           valueFrom:
             secretKeyRef:
               name: lyfevest-secrets
-              key: stripe-secret-key
+              key: stripe-public-key
         - name: STRIPE_WH_ALL_SECRET
           valueFrom:
             secretKeyRef:
