@@ -75,6 +75,20 @@ spec:
             secretKeyRef:
               name: lyfevest-secrets
               key: stripe-wh-all-secret
+        - name: PAYONEER_PROGRAM_ID
+          value: "100121370"
+        - name: PAYONEER_API_URL
+          value: https://api.sandbox.payoneer.com/v2/programs/
+        - name: PAYONEER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: lyfevest-secrets
+              key: payoneer-username
+        - name: PAYONEER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: lyfevest-secrets
+              key: payoneer-password
       imagePullSecrets:
       - name: regcred
 ---
