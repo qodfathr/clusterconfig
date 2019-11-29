@@ -39,6 +39,8 @@ spec:
             secretKeyRef:
               name: lyfevest-secrets
               key: recaptcha-secret
+        - name: KEYCLOAK_CONFIG
+          value: keycloak-beta.json
         - name: KEYCLOAK_API_SECRET
           valueFrom:
             secretKeyRef:
